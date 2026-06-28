@@ -15,7 +15,7 @@ export function SettingsClient({ profile }: { profile: Profile | null }) {
     e.preventDefault();
     setSaving(true); setError(null); setSaved(false);
     const supabase = createClient();
-    const { error: err } = await supabase
+    const { error: err } = await (supabase as any)
       .from("profiles")
       .update({ full_name: fullName })
       .eq("id", profile?.id ?? "");

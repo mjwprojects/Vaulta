@@ -6,7 +6,7 @@ type Patient = {
   id: string;
   name: string;
   condition: string;
-  lastCheckIn: string;
+  lastCheckIn: string | null;
   adherence: number;
   alerts: number;
   status: "critical" | "warning" | "stable";
@@ -59,7 +59,7 @@ export function PatientList({ patients }: { patients: Patient[] }) {
 
               {/* Last check-in */}
               <div className="hidden md:block text-right shrink-0 w-20">
-                <p className="text-xs text-slate-400">{formatRelative(p.lastCheckIn)}</p>
+                <p className="text-xs text-slate-400">{p.lastCheckIn ? formatRelative(p.lastCheckIn) : "—"}</p>
               </div>
 
               {/* Status badge */}

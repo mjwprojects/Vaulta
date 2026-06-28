@@ -51,8 +51,8 @@ export default async function PatientsPage() {
   const logsMap: Record<string, { total: number; taken: number }> = {};
   for (const l of medLogs) {
     if (!logsMap[l.patient_id]) logsMap[l.patient_id] = { total: 0, taken: 0 };
-    logsMap[l.patient_id].total++;
-    if (l.status === "taken") logsMap[l.patient_id].taken++;
+    logsMap[l.patient_id]!.total++;
+    if (l.status === "taken") logsMap[l.patient_id]!.taken++;
   }
 
   const patients = patientRows.map((p: any) => {

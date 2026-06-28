@@ -51,19 +51,19 @@ export default async function DashboardPage() {
   const logsMap: Record<string, { total: number; taken: number }> = {};
   for (const l of medLogs) {
     if (!logsMap[l.patient_id]) logsMap[l.patient_id] = { total: 0, taken: 0 };
-    logsMap[l.patient_id].total++;
-    if (l.status === "taken") logsMap[l.patient_id].taken++;
+    logsMap[l.patient_id]!.total++;
+    if (l.status === "taken") logsMap[l.patient_id]!.taken++;
   }
 
   const checkedInIds = new Set(checkins.map((r: any) => r.patient_id as string));
 
   // Get patient names from profiles table (separate query, no join)
-  const profileIds = patientRows.map((p: any) => p.profile_id as string);
+  const profileIds = patientRows.map((p: any) => p.profile_id as string).filter(Boolean);
   const { data: profileRows } = profileIds.length
     ? await (supabase as any).from("profiles").select("id, full_name").in("id", profileIds)
     : { data: [] as any[] };
   const profileMap: Record<string, string> = {};
-  for (const pr of profileRows ?? []) profileMap[pr.id] = pr.full_name ?? "Unknown";
+  for (const pr of (profileRows ?? [])) profileMap[pr.id] = pr.full_name ?? "Unknown";
 
   // Enrich patients
   const patients = (patientRows ?? []).map((p: any) => {
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
 
   const alerts = (alertRows ?? []).map((a: any) => ({
     id: a.id,
-    patient: profileMap[alertPatientProfileIds[a.patient_id]] ?? "Unknown",
+    patient: profileMap[alertPatientProfileIds[a.patient_id] ?? ""] ?? "Unknown",
     type: a.type,
     severity: a.severity,
     message: a.message,

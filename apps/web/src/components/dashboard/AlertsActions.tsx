@@ -10,7 +10,7 @@ export function AlertsActions({ alertId }: { alertId: string }) {
   async function update(status: "acknowledged" | "resolved") {
     setLoading(status === "acknowledged" ? "ack" : "resolve");
     const supabase = createClient();
-    await supabase.from("alerts").update({ status }).eq("id", alertId);
+    await (supabase as any).from("alerts").update({ status }).eq("id", alertId);
     router.refresh();
     setLoading(null);
   }

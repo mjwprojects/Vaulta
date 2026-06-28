@@ -56,10 +56,10 @@ export function usePatientDetail(patientId: string) {
       if (patientRes.error) { setError(patientRes.error.message); setLoading(false); return; }
 
       setPatient({
-        ...patientRes.data,
+        ...(patientRes.data as any),
         health_records: recordsRes.data ?? [],
-        medications: medsRes.data ?? [],
-        alerts: alertsRes.data ?? [],
+        medications: (medsRes.data ?? []) as any,
+        alerts: (alertsRes.data ?? []) as any,
       });
       setLoading(false);
     }

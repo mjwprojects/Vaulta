@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
-        setAll: (cookiesList) => {
+        setAll: (cookiesList: any[]) => {
           for (const { name, value } of cookiesList) {
             request.cookies.set(name, value);
           }
