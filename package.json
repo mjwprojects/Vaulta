@@ -1,0 +1,24 @@
+{
+  "name": "vaulta",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@vaulta/web",
+    "dev:desktop": "turbo run dev --filter=@vaulta/desktop",
+    "dev:mobile": "turbo run dev --filter=@vaulta/mobile",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@11.8.0"
+}

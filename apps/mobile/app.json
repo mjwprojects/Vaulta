@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Vaulta",
+    "slug": "vaulta-patient",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "vaulta",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1469f5"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vaulta.patient"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1469f5"
+      },
+      "package": "com.vaulta.patient"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "desktop-dashboard",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["exec", "vite"],
+      "port": 1420,
+      "autoPort": true,
+      "cwd": "apps/desktop"
+    },
+    {
+      "name": "web-console",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "apps/web"
+    }
+  ]
+}
