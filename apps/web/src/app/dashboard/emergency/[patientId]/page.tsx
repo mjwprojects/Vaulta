@@ -10,7 +10,7 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
   const { patientId } = await params;
   const supabase = await createClient();
 
-  const { data: patient } = await supabase
+  const { data: patientData } = await (supabase as any)
     .from("patients")
     .select(`
       *,
@@ -21,10 +21,12 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
     .eq("id", patientId)
     .single();
 
+  const patient = patientData as any;
+
   // Log audit event (fire and forget)
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    (supabase.from("audit_logs") as any).insert({
+    await (supabase as any).from("audit_logs").insert({
       user_id: user.id,
       action: "emergency_summary_viewed",
       resource_type: "patient",
@@ -37,8 +39,8 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
     <div className="text-center py-16 text-slate-500">Patient not found or access not permitted.</div>
   );
 
-  const es = patient.emergency_summary as any;
-  const activeMeds = (patient.medications as any[]).filter((m) => m.is_active);
+  const es = patient.emergency_summary;
+  const activeMeds = (patient.medications as any[]).filter((m: any) => m.is_active);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

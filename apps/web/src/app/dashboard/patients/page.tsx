@@ -49,7 +49,7 @@ export default async function PatientsPage() {
         .from("medication_logs")
         .select("patient_id, status")
         .in("patient_id", patientIds)
-        .gte("scheduled_time", `${today}T00:00:00Z`)
+        .gte("scheduled_at", `${today}T00:00:00Z`)
     : { data: [] };
 
   const alertCount: Record<string, number> = {};
