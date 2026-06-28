@@ -6,31 +6,41 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#eef8ff",
-          100: "#d8eeff",
-          200: "#b9e0ff",
-          300: "#89ccff",
-          400: "#52aeff",
-          500: "#2a8aff",
-          600: "#1469f5",
-          700: "#0d51e0",
-          800: "#1143b5",
-          900: "#143c8e",
-          950: "#112657",
+          50:  "#f3eeff",
+          100: "#e4d4ff",
+          200: "#cba8ff",
+          300: "#b07aff",
+          400: "#9d5fff",
+          500: "#8E4DFF",   // primary
+          600: "#7c3aed",
+          700: "#5B21B6",   // accentDeep
+          800: "#4c1d95",
+          900: "#3b1578",
+          highlight: "#C084FC",
+        },
+        surface: {
+          DEFAULT: "#151022",
+          raised:  "#211630",
+        },
+        vaulta: {
+          bg:     "#0B0614",
+          border: "#3B2557",
+          text:   "#F8FAFC",
+          muted:  "#9CA3AF",
         },
         danger: {
-          50: "#fff1f2",
+          50:  "#fff1f2",
           500: "#ef4444",
           600: "#dc2626",
           700: "#b91c1c",
         },
         warning: {
-          50: "#fffbeb",
+          50:  "#fffbeb",
           500: "#f59e0b",
           600: "#d97706",
         },
         success: {
-          50: "#f0fdf4",
+          50:  "#f0fdf4",
           500: "#22c55e",
           600: "#16a34a",
         },

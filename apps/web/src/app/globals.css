@@ -5,14 +5,25 @@
 @layer base {
   :root {
     --sidebar-width: 16rem;
+    --bg:            #0B0614;
+    --surface:       #151022;
+    --surface-raised:#211630;
+    --border:        #3B2557;
+    --text:          #F8FAFC;
+    --text-muted:    #9CA3AF;
+    --brand:         #8E4DFF;
+    --brand-hi:      #C084FC;
+    --brand-deep:    #5B21B6;
   }
 
   * {
-    @apply border-slate-200;
+    border-color: var(--border);
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    background-color: var(--bg);
+    color: var(--text);
+    @apply antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 

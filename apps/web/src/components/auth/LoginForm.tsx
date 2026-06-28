@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export function LoginForm() {
   const router = useRouter();
@@ -17,24 +16,28 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
+    if (error) { setError(error.message); setLoading(false); return; }
     router.push("/dashboard");
     router.refresh();
   }
 
+  const inputStyle = {
+    backgroundColor: "var(--surface-raised)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: "10px",
+    fontSize: "14px",
+    outline: "none",
+  } as React.CSSProperties;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
           Email address
         </label>
         <input
@@ -42,17 +45,13 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@clinic.co.za"
-          className={cn(
-            "w-full px-3.5 py-2.5 rounded-xl border text-sm",
-            "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent",
-            "placeholder:text-slate-400 transition-shadow"
-          )}
+          placeholder="you@family.co.za"
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>
           Password
         </label>
         <div className="relative">
@@ -62,16 +61,13 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className={cn(
-              "w-full px-3.5 py-2.5 rounded-xl border text-sm pr-10",
-              "focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent",
-              "placeholder:text-slate-400 transition-shadow"
-            )}
+            style={{ ...inputStyle, paddingRight: "40px" }}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+            style={{ color: "var(--text-muted)" }}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -79,7 +75,7 @@ export function LoginForm() {
       </div>
 
       {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl px-4 py-3 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}>
           {error}
         </div>
       )}
@@ -87,19 +83,15 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className={cn(
-          "w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl",
-          "bg-brand-600 text-white text-sm font-semibold",
-          "hover:bg-brand-700 active:bg-brand-800 transition-colors",
-          "disabled:opacity-60 disabled:cursor-not-allowed"
-        )}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ background: "linear-gradient(135deg, #8E4DFF, #7c3aed)", color: "#fff" }}
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-        Sign in
+        Sign in to Vaulta
       </button>
 
-      <p className="text-center text-xs text-slate-500 mt-4">
-        MFA-protected · Fully audited · Consent-based access
+      <p className="text-center text-xs mt-4" style={{ color: "var(--text-muted)" }}>
+        Privacy-first · Fully audited · Consent-based access
       </p>
     </form>
   );

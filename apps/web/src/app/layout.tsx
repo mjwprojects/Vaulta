@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Vaulta", template: "%s | Vaulta" },
-  description: "Secure care-monitoring platform for caregivers and patients",
+  title: { default: "Vaulta — Family Health", template: "%s | Vaulta" },
+  description: "Your family health information, organised and accessible when it matters.",
+  applicationName: "Vaulta",
+  keywords: ["family health", "medical records", "care plans", "emergency contacts"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

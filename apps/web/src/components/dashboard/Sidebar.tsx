@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ShieldCheck,
   LayoutDashboard,
   Users,
   Bell,
@@ -15,16 +14,44 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+/* Vaulta glyph — shield + family dots + heart, purple gradient */
+function VaultaGlyph({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="vg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#8E4DFF" />
+          <stop offset="1" stopColor="#C084FC" />
+        </linearGradient>
+      </defs>
+      {/* Shield */}
+      <path
+        d="M50 6L14 20v28c0 20 16 36 36 46 20-10 36-26 36-46V20L50 6z"
+        stroke="url(#vg)" strokeWidth="5" strokeLinejoin="round" fill="none"
+      />
+      {/* Family dots */}
+      <circle cx="36" cy="34" r="4" fill="url(#vg)" />
+      <circle cx="50" cy="28" r="5.5" fill="url(#vg)" />
+      <circle cx="64" cy="34" r="4" fill="url(#vg)" />
+      {/* Heart */}
+      <path
+        d="M50 72c-1 0-18-11-18-24 0-6 5-10 10-10 3 0 6 1.5 8 4 2-2.5 5-4 8-4 5 0 10 4 10 10 0 13-17 24-18 24z"
+        stroke="url(#vg)" strokeWidth="4.5" strokeLinejoin="round" fill="none"
+      />
+    </svg>
+  );
+}
+
 function AlertBadge() {
   const [count, setCount] = useState(0);
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("alerts").select("id", { count: "exact", head: true }).eq("status", "active")
-      .then(({ count: c }) => setCount(c ?? 0));
+    (supabase as any).from("alerts").select("id", { count: "exact", head: true }).eq("status", "active")
+      .then(({ count: c }: any) => setCount(c ?? 0));
     const ch = supabase.channel("sidebar-alerts")
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => {
-        supabase.from("alerts").select("id", { count: "exact", head: true }).eq("status", "active")
-          .then(({ count: c }) => setCount(c ?? 0));
+        (supabase as any).from("alerts").select("id", { count: "exact", head: true }).eq("status", "active")
+          .then(({ count: c }: any) => setCount(c ?? 0));
       }).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
@@ -37,11 +64,11 @@ function AlertBadge() {
 }
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/patients", label: "Patients", icon: Users },
-  { href: "/dashboard/alerts", label: "Alerts", icon: Bell },
-  { href: "/dashboard/audit", label: "Audit Log", icon: ClipboardList },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard",          label: "Overview",  icon: LayoutDashboard, exact: true },
+  { href: "/dashboard/patients", label: "Patients",  icon: Users },
+  { href: "/dashboard/alerts",   label: "Alerts",    icon: Bell },
+  { href: "/dashboard/audit",    label: "Audit Log", icon: ClipboardList },
+  { href: "/dashboard/settings", label: "Settings",  icon: Settings },
 ];
 
 export function Sidebar() {
@@ -56,16 +83,24 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 flex flex-col bg-white border-r border-slate-200 shrink-0">
+    <aside
+      className="w-64 flex flex-col shrink-0"
+      style={{ backgroundColor: "var(--surface)", borderRight: "1px solid var(--border)" }}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-6 h-16 border-b border-slate-100">
-        <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-          <ShieldCheck className="w-5 h-5 text-white" />
+      <div
+        className="flex items-center gap-3 px-5 h-16"
+        style={{ borderBottom: "1px solid var(--border)" }}
+      >
+        <VaultaGlyph size={34} />
+        <div className="flex flex-col leading-tight">
+          <span className="text-base font-bold tracking-wide" style={{ color: "var(--text)" }}>
+            VAULTA
+          </span>
+          <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: "var(--brand)" }}>
+            Family Health
+          </span>
         </div>
-        <span className="text-lg font-bold text-slate-900">Vaulta</span>
-        <span className="ml-auto text-xs font-medium text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded">
-          2.0
-        </span>
       </div>
 
       {/* Nav */}
@@ -77,31 +112,45 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 active
-                  ? "bg-brand-50 text-brand-700"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  ? "text-white"
+                  : "hover:text-white"
               )}
+              style={active ? {
+                background: "linear-gradient(135deg, rgba(142,77,255,0.25), rgba(192,132,252,0.1))",
+                borderLeft: "2px solid var(--brand)",
+                color: "var(--text)",
+              } : {
+                color: "var(--text-muted)",
+              }}
             >
-              <Icon className={cn("w-4 h-4", active ? "text-brand-600" : "text-slate-400")} />
+              <Icon
+                className="w-4 h-4 shrink-0"
+                style={{ color: active ? "var(--brand)" : "var(--text-muted)" }}
+              />
               {label}
-              {label === "Alerts" && (
-                <AlertBadge />
-              )}
+              {label === "Alerts" && <AlertBadge />}
             </Link>
           );
         })}
       </nav>
 
-      {/* Sign out */}
-      <div className="p-3 border-t border-slate-100">
+      {/* Footer — sign out + MJW owner mark */}
+      <div className="p-3" style={{ borderTop: "1px solid var(--border)" }}>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full transition-colors"
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}
         >
-          <LogOut className="w-4 h-4 text-slate-400" />
+          <LogOut className="w-4 h-4" />
           Sign out
         </button>
+        <p className="text-center text-[10px] mt-3" style={{ color: "var(--text-muted)" }}>
+          MJW GROUP
+        </p>
       </div>
     </aside>
   );
