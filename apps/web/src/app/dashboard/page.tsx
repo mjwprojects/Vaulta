@@ -23,67 +23,45 @@ export default async function DashboardPage() {
 
   const patientIds = (consents ?? []).map((c: any) => c.patient_id as string);
 
-  // Step 2 — patient rows (separate query avoids nested-join RLS issues)
-  const { data: patientRows } = patientIds.length
-    ? await supabase
-        .from("patients")
-        .select("id, primary_condition, profile_id, profiles!patients_profile_id_fkey(full_name)")
-        .in("id", patientIds)
-    : { data: [] };
-
   const today = new Date().toISOString().split("T")[0];
 
-  // Active alerts
-  const { data: alertRows } = patientIds.length
-    ? await supabase
-        .from("alerts")
-        .select("id, patient_id, type, severity, title, message, created_at")
-        .in("patient_id", patientIds)
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(20)
-    : { data: [] };
-
-  // Medication logs today
-  const { data: medLogs } = patientIds.length
-    ? await supabase
-        .from("medication_logs")
-        .select("patient_id, status")
-        .in("patient_id", patientIds)
-        .gte("scheduled_at", `${today}T00:00:00Z`)
-    : { data: [] };
-
-  // Check-ins today
-  const { data: checkins } = patientIds.length
-    ? await supabase
-        .from("health_records")
-        .select("patient_id")
-        .in("patient_id", patientIds)
-        .gte("recorded_at", `${today}T00:00:00Z`)
-    : { data: [] };
+  const [patientRows, alertRows, medLogs, checkins] = await Promise.all([
+    patientIds.length
+      ? (supabase as any).from("patients").select("id, primary_condition, profile_id").in("id", patientIds).then((r: any) => r.data ?? [])
+      : Promise.resolve([]),
+    patientIds.length
+      ? (supabase as any).from("alerts").select("id, patient_id, type, severity, title, message, created_at").in("patient_id", patientIds).eq("status", "active").order("created_at", { ascending: false }).limit(20).then((r: any) => r.data ?? [])
+      : Promise.resolve([]),
+    patientIds.length
+      ? (supabase as any).from("medication_logs").select("patient_id, status").in("patient_id", patientIds).gte("scheduled_at", `${today}T00:00:00Z`).then((r: any) => r.data ?? [])
+      : Promise.resolve([]),
+    patientIds.length
+      ? (supabase as any).from("health_records").select("patient_id").in("patient_id", patientIds).gte("recorded_at", `${today}T00:00:00Z`).then((r: any) => r.data ?? [])
+      : Promise.resolve([]),
+  ]) as [any[], any[], any[], any[]];
 
   // Build lookup maps
   const alertCountMap: Record<string, number> = {};
   const hasCritical: Record<string, boolean> = {};
-  for (const a of alertRows ?? []) {
+  for (const a of alertRows) {
     alertCountMap[a.patient_id] = (alertCountMap[a.patient_id] ?? 0) + 1;
     if (a.severity === "critical") hasCritical[a.patient_id] = true;
   }
 
   const logsMap: Record<string, { total: number; taken: number }> = {};
-  for (const l of medLogs ?? []) {
+  for (const l of medLogs) {
     if (!logsMap[l.patient_id]) logsMap[l.patient_id] = { total: 0, taken: 0 };
     logsMap[l.patient_id].total++;
     if (l.status === "taken") logsMap[l.patient_id].taken++;
   }
 
-  const checkedInIds = new Set((checkins ?? []).map((r: any) => r.patient_id as string));
+  const checkedInIds = new Set(checkins.map((r: any) => r.patient_id as string));
 
   // Get patient names from profiles table (separate query, no join)
-  const profileIds = (patientRows ?? []).map((p: any) => p.profile_id as string);
+  const profileIds = patientRows.map((p: any) => p.profile_id as string);
   const { data: profileRows } = profileIds.length
-    ? await supabase.from("profiles").select("id, full_name").in("id", profileIds)
-    : { data: [] };
+    ? await (supabase as any).from("profiles").select("id, full_name").in("id", profileIds)
+    : { data: [] as any[] };
   const profileMap: Record<string, string> = {};
   for (const pr of profileRows ?? []) profileMap[pr.id] = pr.full_name ?? "Unknown";
 
