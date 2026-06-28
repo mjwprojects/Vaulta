@@ -6,7 +6,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = { title: "Emergency Summary" };
 
-export default async function EmergencyPage({ params }: { params: { patientId: string } }) {
+export default async function EmergencyPage({ params }: { params: Promise<{ patientId: string }> }) {
+  const { patientId } = await params;
   const supabase = await createClient();
 
   const { data: patient } = await supabase
@@ -17,7 +18,7 @@ export default async function EmergencyPage({ params }: { params: { patientId: s
       medications(name, dosage, frequency, is_active),
       emergency_summary:emergency_summaries(*)
     `)
-    .eq("id", params.patientId)
+    .eq("id", patientId)
     .single();
 
   // Log audit event (fire and forget)
@@ -27,7 +28,7 @@ export default async function EmergencyPage({ params }: { params: { patientId: s
       user_id: user.id,
       action: "emergency_summary_viewed",
       resource_type: "patient",
-      resource_id: params.patientId,
+      resource_id: patientId,
       metadata: {},
     });
   }
@@ -43,7 +44,7 @@ export default async function EmergencyPage({ params }: { params: { patientId: s
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href={`/dashboard/patients/${params.patientId}`}
+        <Link href={`/dashboard/patients/${patientId}`}
           className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
           <ArrowLeft className="w-4 h-4 text-slate-600" />
         </Link>
