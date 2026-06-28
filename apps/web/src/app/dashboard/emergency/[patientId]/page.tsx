@@ -24,7 +24,7 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
   // Log audit event (fire and forget)
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    supabase.from("audit_logs").insert({
+    (supabase.from("audit_logs") as any).insert({
       user_id: user.id,
       action: "emergency_summary_viewed",
       resource_type: "patient",
