@@ -3,9 +3,9 @@ import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = { title: "Sign In" };
 
-function VaultaGlyph() {
+function VaultaLogo() {
   return (
-    <svg width="44" height="44" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="52" height="52" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="lg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
           <stop stopColor="#8E4DFF" />
@@ -25,73 +25,53 @@ function VaultaGlyph() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "var(--bg)" }}>
-      {/* Brand panel */}
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-6"
+      style={{ backgroundColor: "var(--bg)" }}
+    >
+      {/* Card */}
       <div
-        className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12"
+        className="w-full max-w-sm rounded-2xl p-8"
         style={{
-          background: "linear-gradient(160deg, #151022 0%, #0B0614 50%, #1a0a2e 100%)",
-          borderRight: "1px solid var(--border)",
+          backgroundColor: "var(--surface)",
+          border: "1px solid var(--border)",
         }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <VaultaGlyph />
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-bold tracking-widest" style={{ color: "var(--text)" }}>VAULTA</span>
-            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: "#8E4DFF" }}>Family Health</span>
-          </div>
-        </div>
-
-        {/* Hero copy */}
-        <div>
-          <h1 className="text-4xl font-bold leading-tight mb-5" style={{ color: "var(--text)" }}>
-            Family Health,<br />Safely Organised.
-          </h1>
-          <p className="text-lg leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Secure records. Clear care. Always accessible when it matters most.
-          </p>
-
-          {/* Feature list */}
-          <ul className="mt-8 space-y-3">
-            {[
-              "Medical records & care plans",
-              "Emergency contacts & allergy alerts",
-              "Medication tracking & appointment notes",
-              "Exportable emergency summaries",
-            ].map((f) => (
-              <li key={f} className="flex items-center gap-3 text-sm" style={{ color: "var(--text-muted)" }}>
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: "#8E4DFF" }} />
-                {f}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-          © {new Date().getFullYear()} Vaulta · MJW GROUP
-        </p>
-      </div>
-
-      {/* Form panel */}
-      <div
-        className="flex-1 flex flex-col items-center justify-center p-8"
-        style={{ backgroundColor: "var(--bg)" }}
-      >
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <VaultaGlyph />
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold tracking-widest" style={{ color: "var(--text)" }}>VAULTA</span>
-              <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: "#8E4DFF" }}>Family Health</span>
+        {/* Logo block */}
+        <div className="flex flex-col items-center mb-8">
+          <VaultaLogo />
+          <div className="mt-3 text-center leading-tight">
+            <div className="text-2xl font-bold tracking-widest" style={{ color: "var(--text)" }}>
+              VAULTA
+            </div>
+            <div className="text-xs font-semibold tracking-widest uppercase mt-0.5" style={{ color: "#8E4DFF" }}>
+              Family Health
             </div>
           </div>
-
-          <h2 className="text-2xl font-bold mb-1" style={{ color: "var(--text)" }}>Welcome back</h2>
-          <p className="mb-8 text-sm" style={{ color: "var(--text-muted)" }}>Sign in to your Vaulta account</p>
-          <LoginForm />
         </div>
+
+        {/* Tagline */}
+        <p className="text-center text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+          Family health, safely organised.
+        </p>
+
+        {/* Sign-in heading */}
+        <div className="mb-6">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-1" style={{ color: "var(--text-muted)" }}>
+            Sign In
+          </p>
+        </div>
+
+        <LoginForm />
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6 flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+        <span>VAULTA</span>
+        <span style={{ color: "var(--border)" }}>·</span>
+        <span>FAMILY HEALTH</span>
+        <span style={{ color: "var(--border)" }}>·</span>
+        <span>MJW GROUP</span>
       </div>
     </div>
   );
