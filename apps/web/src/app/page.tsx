@@ -67,12 +67,8 @@ export default function LandingPage() {
       {/* Nav */}
       <nav style={{ borderBottom: "1px solid var(--border)", backgroundColor: "rgba(11,6,20,0.85)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <VaultaGlyph size={36} />
-            <div style={{ lineHeight: 1.1 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.15em", color: "var(--text)" }}>VAULTA</div>
-              <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--brand)" }}>Family Health</div>
-            </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Image src="/logo.png" alt="Vaulta" width={140} height={48} style={{ objectFit: "contain" }} priority />
           </div>
           <Link
             href="/auth/login"
