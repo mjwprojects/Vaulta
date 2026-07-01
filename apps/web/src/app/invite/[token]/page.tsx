@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { AcceptInviteClient } from "./AcceptInviteClient";
 import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
@@ -19,12 +20,16 @@ export default async function AcceptInvitePage({
     return <InvalidToken reason="This invite link is not valid." />;
   }
 
-  // Use anon client — RLS prevents reading other users' invites,
-  // but we expose invite info via a public-readable policy on patient_invites.
-  // The accept action uses service role to link the patient.
-  const supabase = await createClient();
+  // Use admin client to read invite details — patient_invites is RLS-protected
+  // (only caregivers can read their own rows via anon key).
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return <InvalidToken reason="Server configuration error. Please contact support." />;
+  }
 
-  const { data: invite, error } = await (supabase as any)
+  const { data: invite, error } = await admin
     .from("patient_invites")
     .select("id, token, first_name, last_name, primary_condition, status, expires_at, caregiver_id")
     .eq("token", token)
@@ -46,7 +51,8 @@ export default async function AcceptInvitePage({
     return <InvalidToken reason="This invite link has expired. Please ask your caregiver to send a new one." />;
   }
 
-  // Get signed-in user (if any)
+  // Get signed-in user (if any) — use regular client for auth session
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
