@@ -26,11 +26,23 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  // /invite/* is public — no auth required to view the invite page
+  if (pathname.startsWith("/invite/")) {
+    return supabaseResponse;
+  }
+
   if (!user && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (user && pathname.startsWith("/auth")) {
+    // Honour ?next= redirect after login (e.g. from invite acceptance)
+    const next = request.nextUrl.searchParams.get("next");
+    if (next && next.startsWith("/")) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
