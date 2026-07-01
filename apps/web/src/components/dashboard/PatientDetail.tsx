@@ -1,5 +1,5 @@
 "use client";
-import { usePatientDetail } from "@/hooks/usePatientDetail";
+import { usePatientDetail, patientDisplayName } from "@/hooks/usePatientDetail";
 import { cn, formatDate, formatRelative, severityColor } from "@/lib/utils";
 import { VitalsChart } from "./VitalsChart";
 import type { VitalPoint } from "./VitalsChart";
@@ -38,10 +38,10 @@ export function PatientDetailClient({ patientId }: { patientId: string }) {
           <ArrowLeft className="w-4 h-4 text-slate-600" />
         </Link>
         <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-lg font-bold shrink-0">
-          {patient.profile.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+          {patientDisplayName(patient).split(" ").map((n) => n[0]).join("").slice(0, 2)}
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{patient.profile.full_name}</h1>
+          <h1 className="text-xl font-bold text-slate-900">{patientDisplayName(patient)}</h1>
           <p className="text-sm text-slate-400">
             {patient.primary_condition ?? "No condition specified"} · DOB {formatDate(patient.date_of_birth)}
             {patient.blood_type && ` · Blood type ${patient.blood_type}`}
@@ -70,7 +70,7 @@ export function PatientDetailClient({ patientId }: { patientId: string }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left — vitals + records */}
         <div className="xl:col-span-2 space-y-6">
-          <VitalsChartFromRecords records={patient.health_records} patientName={patient.profile.full_name} />
+          <VitalsChartFromRecords records={patient.health_records} patientName={patientDisplayName(patient)} />
           <LatestVitals record={latestRecord} />
           <MedicationsCard meds={activeMeds} />
         </div>

@@ -5,18 +5,26 @@ import type { HealthRecord, Medication, MedicationLog, Alert } from "@vaulta/typ
 
 export type PatientDetail = {
   id: string;
-  profile_id: string;
+  profile_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
   date_of_birth: string;
   blood_type: string | null;
   allergies: string[];
   primary_condition: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
-  profile: { full_name: string; email: string; avatar_url: string | null };
+  profile: { full_name: string; email: string; avatar_url: string | null } | null;
   health_records: HealthRecord[];
   medications: (Medication & { logs: MedicationLog[] })[];
   alerts: Alert[];
 };
+
+export function patientDisplayName(patient: Pick<PatientDetail, "profile" | "first_name" | "last_name">): string {
+  if (patient.profile?.full_name) return patient.profile.full_name;
+  const parts = [patient.first_name, patient.last_name].filter(Boolean);
+  return parts.length ? parts.join(" ") : "Unknown Patient";
+}
 
 export function usePatientDetail(patientId: string) {
   const [patient, setPatient] = useState<PatientDetail | null>(null);
@@ -31,7 +39,7 @@ export function usePatientDetail(patientId: string) {
       const [patientRes, recordsRes, medsRes, alertsRes] = await Promise.all([
         supabase
           .from("patients")
-          .select("*, profile:profiles(full_name, email, avatar_url)")
+          .select("*, first_name, last_name, profile:profiles!profile_id(full_name, email, avatar_url)")
           .eq("id", patientId)
           .single(),
         supabase

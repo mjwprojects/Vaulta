@@ -24,7 +24,7 @@ export default async function PatientsPage() {
 
   const [patientRows, alertRows, medLogs] = await Promise.all([
     patientIds.length
-      ? (supabase as any).from("patients").select("id, primary_condition, profile_id").in("id", patientIds).then((r: any) => r.data ?? [])
+      ? (supabase as any).from("patients").select("id, primary_condition, profile_id, first_name, last_name").in("id", patientIds).then((r: any) => r.data ?? [])
       : Promise.resolve([]),
     patientIds.length
       ? (supabase as any).from("alerts").select("patient_id, severity").in("patient_id", patientIds).eq("status", "active").then((r: any) => r.data ?? [])
@@ -63,7 +63,7 @@ export default async function PatientsPage() {
       ? "critical" : alerts > 0 ? "warning" : "stable";
     return {
       id: p.id,
-      name: profileMap[p.profile_id] ?? "Unknown",
+      name: profileMap[p.profile_id] ?? [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown",
       condition: p.primary_condition ?? "—",
       lastCheckIn: null,
       adherence,
