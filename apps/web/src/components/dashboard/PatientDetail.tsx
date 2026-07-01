@@ -2,6 +2,7 @@
 import { usePatientDetail } from "@/hooks/usePatientDetail";
 import { cn, formatDate, formatRelative, severityColor } from "@/lib/utils";
 import { VitalsChart } from "./VitalsChart";
+import type { VitalPoint } from "./VitalsChart";
 import {
   ArrowLeft, AlertTriangle, Pill, Heart, Thermometer,
   Droplets, Wind, Scale, Activity, Loader2, Phone, ShieldAlert,
@@ -69,7 +70,7 @@ export function PatientDetailClient({ patientId }: { patientId: string }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left — vitals + records */}
         <div className="xl:col-span-2 space-y-6">
-          <VitalsChartFromRecords records={patient.health_records} />
+          <VitalsChartFromRecords records={patient.health_records} patientName={patient.profile.full_name} />
           <LatestVitals record={latestRecord} />
           <MedicationsCard meds={activeMeds} />
         </div>
@@ -101,20 +102,19 @@ function QuickStat({ label, value, color }: { label: string; value: string; colo
   );
 }
 
-function VitalsChartFromRecords({ records }: { records: HealthRecord[] }) {
-  // Transform to chart format (last 7 days)
-  const data = records.slice(0, 7).reverse().map((r) => ({
+function VitalsChartFromRecords({ records, patientName }: { records: HealthRecord[]; patientName: string }) {
+  const chartData: VitalPoint[] = records.slice(0, 7).reverse().map((r) => ({
     day: new Date(r.recorded_at).toLocaleDateString("en-ZA", { weekday: "short" }),
-    heartRate: r.heart_rate,
-    systolic: r.blood_pressure_systolic,
-    oxygen: r.oxygen_saturation,
+    heartRate: r.heart_rate ?? null,
+    systolic: r.blood_pressure_systolic ?? null,
+    oxygen: r.oxygen_saturation ?? null,
   }));
-  if (!data.length) return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 text-center text-slate-400 text-sm">
-      No health records yet.
-    </div>
+  return (
+    <VitalsChart
+      data={chartData}
+      title={`Vitals Trend — ${patientName}`}
+    />
   );
-  return <VitalsChart />;
 }
 
 function LatestVitals({ record }: { record: HealthRecord | null }) {
