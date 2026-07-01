@@ -63,7 +63,7 @@ export default async function PatientsPage() {
       ? "critical" : alerts > 0 ? "warning" : "stable";
     return {
       id: p.id,
-      name: profileMap[p.profile_id] ?? [p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown",
+      name: profileMap[p.profile_id] ?? ([p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown"),
       condition: p.primary_condition ?? "—",
       lastCheckIn: null,
       adherence,
