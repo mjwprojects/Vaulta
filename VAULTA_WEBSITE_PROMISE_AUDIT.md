@@ -1,0 +1,29 @@
+# VAULTA_WEBSITE_PROMISE_AUDIT.md
+
+Audit date: 2026-07-02. Claims taken verbatim from the live landing page (`apps/web/src/app/page.tsx`, deployed at vaulta.co.za).
+
+**Verdict up front: 4 of 12 claims are defensible today. 8 are partially or wholly untrue as marketed. The "Privacy First / end-to-end data security" and "Care Plans" claims are the most exposed — recommend softening the copy or hiding those feature cards until built.**
+
+| Website Claim | Required Functionality | Current Status | Evidence in Code | Gap | Risk | Required Fix | Test Required |
+|---|---|---|---|---|---|---|---|
+| 1 vault for your whole family | Family vault with multiple members | **Partial** | `caregiver_consents` links one caregiver to N patients; no `families`/`vaults` table | No vault entity; no shared family container; second caregiver cannot join; "family" framing is implicit only | Medium | Add `vaults` + `vault_members` (or document caregiver-as-vault model); multi-caregiver support later | Manual: caregiver adds 2 patients, isolation check (Test 3) |
+| Always on, accessible anywhere | Authenticated responsive web/PWA | **Partial** | Next.js on Vercel is always-on; dashboard is desktop-oriented; PWA icons exist in repo root but no manifest/service worker wired | No PWA install, no offline, mobile app unpublished and failing type-check | Low | Wire PWA manifest; fix mobile app or de-scope | Lighthouse PWA check; phone-browser session |
+| Zero friction in an emergency | Emergency card in one tap | **Partial + broken** | `/dashboard/emergency/[patientId]` exists | Crashes when patient has no linked profile (`page.tsx:62`); no mobile emergency-card screen; no one-tap entry point from patient app; no data-entry UI for `emergency_summaries` | High | Fix crash; add mobile emergency card tab; add edit UI | Test 9 |
+| Medical Records ("diagnoses, lab results, clinical notes… one secure place") | Upload, store, tag, retrieve per member | **Missing** | No storage bucket, no upload code, no diagnoses/lab/clinical-note tables | Entire feature absent | **High — advertised feature does not exist** | Phase 3 build (tables + private bucket + upload/view UI) or remove card from site | Test 7 |
+| Medication Tracking ("dosages, schedules, refill reminders") | Full med CRUD + schedules + refill reminders | **Partial** | `medications`, `medication_logs` tables; mobile mark-taken works | **No UI to add a medication anywhere**; RLS blocks caregivers from inserting meds; no schedule generator; no refill dates or reminders | High | Phase 4 build: caregiver med CRUD + RLS insert policy + refill fields + reminder job | Test 8 |
+| Emergency Summaries ("one-tap emergency cards… ready when seconds count") | Card w/ allergies, blood type, conditions, contacts | **Partial** | Web page renders these fields | Same gaps as "Zero friction" row; no way to populate conditions/DNR/contacts after creation | High | Same as above + patient edit UI | Test 9 |
+| Care Plans ("care plans, appointment notes, treatment timelines") | Care plan CRUD, tasks, notes, timeline | **Missing** | Nothing in repo | Entire feature absent | **High — advertised feature does not exist** | Phase 6 build or remove card from site | Care plan acceptance test (§13 of brief) |
+| Allergy & Alert System ("contraindications, urgent flags") | Allergy records w/ severity, surfaced alerts | **Partial** | `patients.allergies text[]`; shown on detail + emergency pages; vitals/SOS alert engine real and good | No add/edit allergy UI; no severity/reaction/contraindication structure; alerts not checked before med changes | Medium | Structured `allergies` table + edit UI; surface on med add flow | Test in §14 of brief |
+| Privacy First | Roles, RLS, secure storage | **Partial** | RLS on all tables | Signup-metadata role escalation (Critical, see security review); forgeable audit inserts; consent created by caregiver not patient | **Critical** | Fix RLS/trigger issues before marketing this | Test 10 |
+| Fully audited access logs | Log sensitive views/actions | **Partial** | `audit_logs` table; 3 actions logged | Record views not logged; IP/user-agent never captured; any user can insert forged rows (`with check (true)`); page shows own actions only; "Immutable record of all data access" caption overstates | High | Central audit helper; log all sensitive reads/writes; lock insert policy to service role | Test 10.7 |
+| Consent-based sharing | Patient-granted, revocable, scoped consent | **Partial** | `caregiver_consents` + invite flow | Consent row is inserted **by the caregiver** at invite creation — patient never actively grants; accept flow doesn't verify invitee email; no web revoke UI (mobile has one) | High | Move consent creation to accept step; verify email; add revoke + scope UI | Test 4, Test 10 |
+| End-to-end data security at every layer | True E2EE or equivalent controls | **Overclaim** | TLS + RLS + Supabase at-rest encryption only | No end-to-end encryption exists; client copy on invite page also says "your medical information is encrypted" (at-rest only) | **Critical (marketing/compliance)** | Change site copy to: "secure access controls, encrypted transport, protected storage, and audited permission-based sharing" (per brief §15.3 — wording change recommended, not yet applied) | Copy review |
+
+## Additional copy exposures found
+
+- `LoginForm.tsx:96` — "Privacy-first · Fully audited · Consent-based access" (footer of login form).
+- Mobile `login.tsx:59` — "MFA-protected · Consent-based access · Fully audited" — **MFA is not implemented anywhere**.
+- `AcceptInviteClient.tsx:158` — "Your medical information is encrypted and accessible only to you and your authorised caregiver."
+- Audit page subtitle — "Immutable record of all data access and actions."
+
+Do not market these statements until the Phase 1–2 security fixes land, or soften them now (one-line copy edits).

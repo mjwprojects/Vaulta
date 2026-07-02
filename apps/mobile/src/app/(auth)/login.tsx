@@ -56,7 +56,7 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
-        <Text style={s.footer}>MFA-protected · Consent-based access · Fully audited</Text>
+        <Text style={s.footer}>Secure sign-in · Consent-based access · Activity logged</Text>
       </View>
     </KeyboardAvoidingView>
   );

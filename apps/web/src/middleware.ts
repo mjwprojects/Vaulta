@@ -31,10 +31,15 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  if (!user && pathname.startsWith("/dashboard")) {
+  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin"))) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Password-recovery sessions must reach the reset form
+  if (pathname.startsWith("/auth/reset-password")) {
+    return supabaseResponse;
   }
 
   if (user && pathname.startsWith("/auth")) {

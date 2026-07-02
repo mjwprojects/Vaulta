@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatDate } from "@/lib/utils";
 import { ShieldAlert, Phone, Pill, AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -23,24 +24,31 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
 
   const patient = patientData as any;
 
-  // Log audit event (fire and forget)
+  // Log audit event via service role — audit_logs inserts are locked to the server
   const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    await (supabase as any).from("audit_logs").insert({
-      user_id: user.id,
-      action: "emergency_summary_viewed",
-      resource_type: "patient",
-      resource_id: patientId,
-      metadata: {},
-    });
+  if (user && patient) {
+    try {
+      await createAdminClient().from("audit_logs").insert({
+        user_id: user.id,
+        action: "emergency_summary_viewed",
+        resource_type: "patient",
+        resource_id: patientId,
+        metadata: {},
+      });
+    } catch {
+      // Never block the emergency page on audit logging
+    }
   }
 
   if (!patient) return (
     <div className="text-center py-16 text-slate-500">Patient not found or access not permitted.</div>
   );
 
+  const patientName =
+    patient.profile?.full_name ??
+    ([patient.first_name, patient.last_name].filter(Boolean).join(" ") || "Unknown Patient");
   const es = patient.emergency_summary;
-  const activeMeds = (patient.medications as any[]).filter((m: any) => m.is_active);
+  const activeMeds = ((patient.medications as any[]) ?? []).filter((m: any) => m.is_active);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -59,7 +67,7 @@ export default async function EmergencyPage({ params }: { params: Promise<{ pati
       {/* Critical banner */}
       <div className="bg-red-600 text-white rounded-2xl p-5">
         <p className="text-xs font-semibold uppercase tracking-wider opacity-75 mb-1">Patient</p>
-        <p className="text-2xl font-bold">{(patient.profile as any).full_name}</p>
+        <p className="text-2xl font-bold">{patientName}</p>
         <div className="flex flex-wrap gap-4 mt-3 text-sm">
           <span>DOB: {formatDate(patient.date_of_birth)}</span>
           {patient.blood_type && (

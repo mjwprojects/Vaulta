@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { AlertsFeed } from "@/components/dashboard/AlertsFeed";
 import { PatientList } from "@/components/dashboard/PatientList";
-import { VitalsChart } from "@/components/dashboard/VitalsChart";
 import { Users, Bell, ShieldCheck, Activity } from "lucide-react";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -14,20 +13,31 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const uid = user?.id ?? "";
 
-  // Step 1 — consented patient IDs
-  const { data: consents } = await supabase
-    .from("caregiver_consents")
-    .select("patient_id")
-    .eq("caregiver_id", uid)
-    .eq("status", "active");
+  // Step 1 — patients under this caregiver's care:
+  // consented (patient accepted an invite) + directly managed (caregiver_id)
+  const [{ data: consents }, { data: owned }] = await Promise.all([
+    supabase
+      .from("caregiver_consents")
+      .select("patient_id")
+      .eq("caregiver_id", uid)
+      .eq("status", "active"),
+    supabase
+      .from("patients")
+      .select("id")
+      .eq("caregiver_id", uid)
+      .eq("status", "active"),
+  ]);
 
-  const patientIds = (consents ?? []).map((c: any) => c.patient_id as string);
+  const patientIds = [...new Set([
+    ...(consents ?? []).map((c: any) => c.patient_id as string),
+    ...(owned ?? []).map((p: any) => p.id as string),
+  ])];
 
   const today = new Date().toISOString().split("T")[0];
 
   const [patientRows, alertRows, medLogs, checkins] = await Promise.all([
     patientIds.length
-      ? (supabase as any).from("patients").select("id, primary_condition, profile_id").in("id", patientIds).then((r: any) => r.data ?? [])
+      ? (supabase as any).from("patients").select("id, primary_condition, profile_id, first_name, last_name").in("id", patientIds).then((r: any) => r.data ?? [])
       : Promise.resolve([]),
     patientIds.length
       ? (supabase as any).from("alerts").select("id, patient_id, type, severity, title, message, created_at").in("patient_id", patientIds).eq("status", "active").order("created_at", { ascending: false }).limit(20).then((r: any) => r.data ?? [])
@@ -74,7 +84,7 @@ export default async function DashboardPage() {
       ? "critical" : alertCount > 0 ? "warning" : "stable";
     return {
       id: p.id,
-      name: profileMap[p.profile_id] ?? "Unknown",
+      name: profileMap[p.profile_id] ?? ([p.first_name, p.last_name].filter(Boolean).join(" ") || "Unknown"),
       condition: p.primary_condition ?? "—",
       lastCheckIn: null,
       adherence,
@@ -89,9 +99,12 @@ export default async function DashboardPage() {
     return m;
   }, {});
 
+  const patientNameMap: Record<string, string> = {};
+  for (const p of patients) patientNameMap[p.id] = p.name;
+
   const alerts = (alertRows ?? []).map((a: any) => ({
     id: a.id,
-    patient: profileMap[alertPatientProfileIds[a.patient_id] ?? ""] ?? "Unknown",
+    patient: patientNameMap[a.patient_id] ?? profileMap[alertPatientProfileIds[a.patient_id] ?? ""] ?? "Unknown",
     type: a.type,
     severity: a.severity,
     message: a.message,
@@ -107,7 +120,7 @@ export default async function DashboardPage() {
   const checkedIn = checkedInIds.size;
 
   const stats = [
-    { label: "Monitored Patients", value: String(totalPatients), icon: Users, trend: `${totalPatients} active consents`, color: "blue" as const },
+    { label: "Monitored Patients", value: String(totalPatients), icon: Users, trend: `${totalPatients} under your care`, color: "blue" as const },
     { label: "Active Alerts", value: String(alerts.length), icon: Bell, trend: criticalCount > 0 ? `${criticalCount} critical` : "None critical", color: "red" as const },
     { label: "Medication Adherence", value: `${avgAdherence}%`, icon: ShieldCheck, trend: "Today's doses", color: "green" as const },
     { label: "Check-ins Today", value: `${checkedIn}/${totalPatients}`, icon: Activity, trend: `${totalPatients - checkedIn} pending`, color: "amber" as const },
@@ -121,7 +134,6 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
           <PatientList patients={patients} />
-          <VitalsChart data={[]} />
         </div>
         <AlertsFeed alerts={alerts} />
       </div>

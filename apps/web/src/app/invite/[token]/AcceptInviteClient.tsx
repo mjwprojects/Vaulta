@@ -143,7 +143,7 @@ export function AcceptInviteClient({
               <p className="text-center text-xs" style={{ color: "var(--text-muted)" }}>
                 Don't have an account?{" "}
                 <Link
-                  href={`/auth/login?next=/invite/${token}&signup=true`}
+                  href={`/auth/register?next=/invite/${token}`}
                   className="underline"
                   style={{ color: "var(--brand)" }}
                 >
@@ -155,8 +155,8 @@ export function AcceptInviteClient({
         )}
 
         <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-          Vaulta is a secure family health platform. Your medical information is encrypted and
-          accessible only to you and your authorised caregiver.
+          Vaulta is a secure family health platform. Your medical information is protected by
+          strict access controls and is visible only to you and your authorised caregiver.
         </p>
       </div>
     </div>

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "example-readonly-db": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub",
+        "--dsn",
+        "${READONLY_DATABASE_URL}"
+      ],
+      "env": {}
+    }
+  }
+}

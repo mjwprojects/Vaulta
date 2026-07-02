@@ -34,7 +34,7 @@ export default async function AuditPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Audit Log</h1>
-          <p className="text-sm text-slate-500">Immutable record of all data access and actions</p>
+          <p className="text-sm text-slate-500">A record of your account&apos;s actions and data access</p>
         </div>
       </div>
 

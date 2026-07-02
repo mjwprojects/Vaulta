@@ -1,7 +1,19 @@
 packages:
   - "apps/*"
+  # Desktop app de-scoped 2026-07-02 (duplicates web dashboard, failing
+  # type-check). Code kept in apps/desktop; re-add here to revive it.
+  - "!apps/desktop"
   - "packages/*"
 allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+# Make next's .d.ts files resolve the web app's @types/react (19) instead of
+# the @types/react@18 copy hoisted into .pnpm/node_modules by react-native.
+packageExtensions:
+  next:
+    peerDependencies:
+      "@types/react": "*"
+    peerDependenciesMeta:
+      "@types/react":
+        optional: true

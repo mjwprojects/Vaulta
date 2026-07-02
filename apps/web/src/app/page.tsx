@@ -50,7 +50,7 @@ const features = [
   {
     icon: "🔒",
     title: "Privacy First",
-    desc: "Fully audited access logs, consent-based sharing, and end-to-end data security at every layer.",
+    desc: "Secure access controls, encrypted transport, protected storage, and audited permission-based sharing.",
   },
 ];
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
             <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em" }}>VAULTA</span>
           </div>
           <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
-            © {new Date().getFullYear()} Vaulta · MJW GROUP · Privacy-first · Fully audited
+            © {new Date().getFullYear()} Vaulta · MJW GROUP · Privacy-first · Secure by design
           </p>
         </div>
       </footer>

@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 
 export type InviteFormState =
@@ -27,8 +28,10 @@ export async function createPatientInviteAction(
   if (!email || !email.includes("@")) return { status: "error", message: "A valid email address is required." };
   if (!dob)       return { status: "error", message: "Date of birth is required." };
 
-  // Create the patient record (no profile_id yet — linked when patient accepts invite)
-  const { data: patient, error: patientErr } = await (supabase as any)
+  // Create the patient record (no profile_id yet — linked when patient accepts invite).
+  // Caregiver access flows from patients.caregiver_id ownership; a consent record
+  // is only created when the patient accepts the invite (consent-based sharing).
+  const { data: patient, error: patientErr } = await supabase
     .from("patients")
     .insert({
       caregiver_id:      user.id,
@@ -42,21 +45,13 @@ export async function createPatientInviteAction(
     .select("id")
     .single();
 
-  if (patientErr) {
+  if (patientErr || !patient) {
     console.error("patient insert error:", patientErr);
     return { status: "error", message: "Could not create patient record. Please try again." };
   }
 
-  // Create caregiver consent immediately (caregiver owns this patient)
-  await (supabase as any).from("caregiver_consents").insert({
-    patient_id:   patient.id,
-    caregiver_id: user.id,
-    access_level: "full",
-    status:       "active",
-  });
-
   // Create the invite record with a secure random token
-  const { data: invite, error: inviteErr } = await (supabase as any)
+  const { data: invite, error: inviteErr } = await supabase
     .from("patient_invites")
     .insert({
       caregiver_id:      user.id,
@@ -71,19 +66,23 @@ export async function createPatientInviteAction(
     .select("token")
     .single();
 
-  if (inviteErr) {
+  if (inviteErr || !invite) {
     console.error("invite insert error:", inviteErr);
     return { status: "error", message: "Could not create invite link. Please try again." };
   }
 
-  // Audit log
-  await (supabase as any).from("audit_logs").insert({
-    user_id:       user.id,
-    action:        "patient.invite_created",
-    resource_type: "patient_invites",
-    resource_id:   patient.id,
-    metadata:      { patient_id: patient.id, invite_token: invite.token, patient_email: email },
-  });
+  // Audit log via service role — audit_logs inserts are locked to the server
+  try {
+    await createAdminClient().from("audit_logs").insert({
+      user_id:       user.id,
+      action:        "patient.invite_created",
+      resource_type: "patient_invites",
+      resource_id:   patient.id,
+      metadata:      { patient_id: patient.id, patient_email: email },
+    });
+  } catch (e) {
+    console.error("audit log error:", e);
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://vaulta.co.za";
   const inviteUrl = `${baseUrl}/invite/${invite.token}`;

@@ -92,8 +92,21 @@ export function LoginForm() {
         Sign in to Vaulta
       </button>
 
+      <div className="flex items-center justify-between text-xs mt-4">
+        <a href="/auth/forgot-password" className="underline" style={{ color: "var(--text-muted)" }}>
+          Forgot password?
+        </a>
+        <a
+          href={`/auth/register${nextUrl !== "/dashboard" ? `?next=${encodeURIComponent(nextUrl)}` : ""}`}
+          className="underline"
+          style={{ color: "var(--brand)" }}
+        >
+          Create an account
+        </a>
+      </div>
+
       <p className="text-center text-xs mt-4" style={{ color: "var(--text-muted)" }}>
-        Privacy-first · Fully audited · Consent-based access
+        Privacy-first · Access controls · Consent-based sharing
       </p>
     </form>
   );

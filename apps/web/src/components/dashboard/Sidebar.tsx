@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Settings,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -71,9 +72,27 @@ const NAV = [
   { href: "/dashboard/settings", label: "Settings",  icon: Settings },
 ];
 
+function useIsAdmin() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+        .then(({ data }) => setIsAdmin(data?.role === "admin"));
+    });
+  }, []);
+  return isAdmin;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const isAdmin = useIsAdmin();
 
   async function signOut() {
     const supabase = createClient();
@@ -134,6 +153,21 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:text-white"
+            style={pathname.startsWith("/admin") ? {
+              background: "linear-gradient(135deg, rgba(142,77,255,0.25), rgba(192,132,252,0.1))",
+              borderLeft: "2px solid var(--brand)",
+              color: "var(--text)",
+            } : { color: "var(--text-muted)" }}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: "var(--brand)" }} />
+            Admin
+          </Link>
+        )}
       </nav>
 
       {/* Footer — sign out + MJW owner mark */}

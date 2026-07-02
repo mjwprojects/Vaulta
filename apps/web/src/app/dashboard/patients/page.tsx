@@ -12,13 +12,24 @@ export default async function PatientsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const uid = user?.id ?? "";
 
-  const { data: consents } = await supabase
-    .from("caregiver_consents")
-    .select("patient_id")
-    .eq("caregiver_id", uid)
-    .eq("status", "active");
+  // Consented (patient accepted an invite) + directly managed (caregiver_id)
+  const [{ data: consents }, { data: owned }] = await Promise.all([
+    supabase
+      .from("caregiver_consents")
+      .select("patient_id")
+      .eq("caregiver_id", uid)
+      .eq("status", "active"),
+    supabase
+      .from("patients")
+      .select("id")
+      .eq("caregiver_id", uid)
+      .eq("status", "active"),
+  ]);
 
-  const patientIds = (consents ?? []).map((c: any) => c.patient_id as string);
+  const patientIds = [...new Set([
+    ...(consents ?? []).map((c: any) => c.patient_id as string),
+    ...(owned ?? []).map((p: any) => p.id as string),
+  ])];
 
   const today = new Date().toISOString().split("T")[0];
 
